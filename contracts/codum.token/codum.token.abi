@@ -1,0 +1,170 @@
+{
+   "version": "eosio::abi/1.0",
+   "types": [{
+      "new_type_name": "account_name",
+      "type": "name"
+   }],
+  "structs": [{
+      "name": "gradunlock",
+      "base": "",
+      "fields": [{
+          "name": "locked_until",
+          "type": "uint64"
+        },{
+          "name": "lock_threshold",
+          "type": "uint8"
+        }
+      ]
+    },{
+      "name": "transferlock",
+      "base": "",
+      "fields": [{
+          "name": "id",
+          "type": "uint64"
+        },{
+          "name": "account",
+          "type": "name"
+        },{
+          "name": "locked_balance",
+          "type": "uint64"
+        },{
+          "name": "locked_until",
+          "type": "uint64"
+        }
+      ]
+    },,{
+      "name": "transfer",
+      "base": "",
+      "fields": [
+        {"name":"from", "type":"account_name"},
+        {"name":"to", "type":"account_name"},
+        {"name":"quantity", "type":"asset"},
+        {"name":"memo", "type":"string"}
+      ]
+    },{
+     "name": "create",
+     "base": "",
+     "fields": [
+        {"name":"issuer", "type":"account_name"},
+        {"name":"maximum_supply", "type":"asset"}
+     ]
+  },{
+     "name": "issue",
+     "base": "",
+     "fields": [
+        {"name":"to", "type":"account_name"},
+        {"name":"quantity", "type":"asset"},
+        {"name":"memo", "type":"string"}
+     ]
+  },{
+      "name": "account",
+      "base": "",
+      "fields": [
+        {"name":"balance", "type":"asset"}
+      ]
+    },{
+      "name": "currency_stats",
+      "base": "",
+      "fields": [
+        {"name":"supply", "type":"asset"},
+        {"name":"max_supply", "type":"asset"},
+        {"name":"issuer", "type":"account_name"}
+      ]
+    },{
+      "name": "setunlock",
+      "base": "",
+      "fields": [{
+          "name": "date",
+          "type": "uint64"
+        },{
+          "name": "percent",
+          "type": "uint8"
+        }
+      ]
+    },{
+      "name": "launchlock",
+      "base": "",
+      "fields": [{
+          "name": "to",
+          "type": "name"
+        },{
+          "name": "quantity",
+          "type": "asset"
+        }
+      ]
+    },{
+      "name": "gradlock",
+      "base": "",
+      "fields": [{
+          "name": "to",
+          "type": "name"
+        },{
+          "name": "quantity",
+          "type": "asset"
+        }
+      ]
+    }
+  ],
+  "actions": [{
+      "name": "transfer",
+      "type": "transfer",
+      "ricardian_contract": ""
+    },{
+      "name": "issue",
+      "type": "issue",
+      "ricardian_contract": ""
+    }, {
+      "name": "create",
+      "type": "create",
+      "ricardian_contract": ""
+    },,{
+      "name": "setunlock",
+      "type": "setunlock",
+      "ricardian_contract": ""
+    },{
+      "name": "launchlock",
+      "type": "launchlock",
+      "ricardian_contract": ""
+    },{
+      "name": "gradlock",
+      "type": "gradlock",
+      "ricardian_contract": ""
+    }
+  ],
+  "tables": [{
+      "name": "accounts",
+      "type": "account",
+      "index_type": "i64",
+      "key_names" : ["currency"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "stat",
+      "type": "currency_stats",
+      "index_type": "i64",
+      "key_names" : ["currency"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "gradunlocks",
+      "index_type": "i64",
+      "key_names": [
+        "locked_until"
+      ],
+      "key_types": [
+        "uint64"
+      ],
+      "type": "gradunlock"
+    },{
+      "name": "transferlock",
+      "index_type": "i64",
+      "key_names": [
+        "id"
+      ],
+      "key_types": [
+        "uint64"
+      ],
+      "type": "transferlock"
+    }
+  ],
+  "ricardian_clauses": [],
+  "abi_extensions": []
+}
