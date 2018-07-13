@@ -80,7 +80,7 @@ void token::transfer(account_name from,
     add_balance(to, quantity, from);
 }
 
-void token::setunlock(uint64_t date, uint8_t percent) // WIP
+void token::setgrunlock(uint64_t date, uint8_t percent) // WIP
 {
     require_auth(_self);
     gradunlocks gradual_unlock_table(_self, _self); // code: _self, scope: _self
@@ -213,4 +213,4 @@ void token::launch_lock(account_name to, asset quantity, uint64_t launch_date)
 
 } // namespace eosio
 
-EOSIO_ABI(eosio::token, (create)(issue)(transfer)(setunlock)(launchlock)(gradlock))
+EOSIO_ABI(eosio::token, (create)(issue)(transfer)(setgrunlock)(launchlock)(gradlock))
