@@ -48,6 +48,12 @@ public:
   void gradlock(account_name to, asset quantity);
 
   // @abi action
+  void distribsale(account_name from, account_name to, asset quantity, string memo);
+
+  // @abi action
+  void distribcontr(account_name from, account_name to, asset quantity, string memo);
+
+  // @abi action
   void updaterate(uint8_t network, uint64_t rate);
 
   inline asset get_supply(symbol_name sym) const;
@@ -73,7 +79,7 @@ private:
   typedef eosio::multi_index<N(accounts), account> accounts;
   typedef eosio::multi_index<N(stat), currency_stats> stats;
 
-  /// @abi table gradunlocks i64
+  /// @abi table gradunlock i64
   struct gradunlock
   {
     uint64_t locked_until;
@@ -84,7 +90,7 @@ private:
     EOSLIB_SERIALIZE(gradunlock, (locked_until)(lock_threshold))
   };
 
-  typedef eosio::multi_index<N(gradunlocks), gradunlock> gradunlocks;
+  typedef eosio::multi_index<N(gradunlock), gradunlock> gradunlocks;
 
   /// @abi table transferlock i64
   struct transferlock
@@ -122,9 +128,11 @@ private:
 
   // PRIVATE UTILITY FUNCTIONS
   void launch_lock(account_name to, asset quantity, uint64_t launch_date);
-  void set_gradual_lock(account_name to, asset quantity);
+  void gradual_lock(account_name to, asset quantity);
   void sub_balance(account_name owner, asset value);
   void add_balance(account_name owner, asset value, account_name ram_payer);
+  void issuer_active_permission_check(asset quantity);
+  void issuer_and_asset_check(asset quantity);
 
 public:
   struct transfer_args

@@ -87,7 +87,6 @@ void token::setgrunlock(uint64_t date, uint8_t percent) // WIP
     gradunlocks gradual_unlock_table(_self, _self); // code: _self, scope: _self
     auto existing = gradual_unlock_table.find(date);
     eosio_assert(existing == gradual_unlock_table.end(), "This lock date is already set");
-
     gradual_unlock_table.emplace(_self, [&](auto &ut) {
         ut.locked_until = date;
         ut.lock_threshold = percent;
@@ -96,45 +95,56 @@ void token::setgrunlock(uint64_t date, uint8_t percent) // WIP
 
 void token::launchlock(account_name to, asset quantity)
 {
-    // ISSUER PERMISSION CHECK //
-    auto sym = quantity.symbol;
-    eosio_assert(sym.is_valid(), "invalid symbol name");
-    auto sym_name = sym.name();
-    stats statstable(_self, sym_name);
-    auto existing = statstable.find(sym_name);
-    eosio_assert(existing != statstable.end(), "token with symbol does not exist, create token before issue");
-    const auto &st = *existing;
-    require_auth(st.issuer);
-    // ISSUER PERMISSION CHECK COMPLETE//
-
-    // QUANTITY CHECK //
-    eosio_assert(quantity.is_valid(), "invalid quantity");
-    eosio_assert(quantity.amount > 0, "must issue positive quantity");
-    eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
-    eosio_assert(quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
-    // QUANTITY CHECK //
-
+    token::issuer_and_asset_check(quantity);
     /*uint64_t launch_date = stactic_cast<uint64_t>(1567987200)//==> epoch time in seconds corressponding to  Monday, 9 September 2019 00:00:00 GMT*/
-
     uint64_t launch_date = 1000; // launch date for testing.
     token::launch_lock(to, quantity, launch_date);
 }
 
 void token::gradlock(account_name to, asset quantity)
 {
-    eosio::print("DEBUG-- GRADLOCK WORKS \n");
-    // ISSUER PERMISSION CHECK //
-    auto sym = quantity.symbol; //==> requires quantity, if need be to extract it to a private function...
-    eosio_assert(sym.is_valid(), "invalid symbol name");
-    auto sym_name = sym.name();
-    stats statstable(_self, sym_name);
-    auto existing = statstable.find(sym_name);
-    eosio_assert(existing != statstable.end(), "token with symbol does not exist, create token before issue");
-    const auto &st = *existing;
-    require_auth(st.issuer);
-    // ISSUER PERMISSION CHECK COMPLETE//
+    token::issuer_active_permission_check(quantity);
+    gradual_lock(to, quantity);
+}
 
-    set_gradual_lock(to, quantity);
+void token::distribsale(account_name from, account_name to, asset quantity, string memo)
+{
+    require_auth2(from, N(active)); // from and issuer should be same.
+
+    SEND_INLINE_ACTION(*this, launchlock, {from, N(active)}, {to, quantity});
+    transfer(from, to, quantity, memo); // needs to be inlined
+}
+
+void token::distribcontr(account_name from, account_name to, asset quantity, string memo)
+{
+    require_auth2(from, N(active)); // from and issuer should be same.
+
+    SEND_INLINE_ACTION(*this, gradlock, {from, N(active)}, {to, quantity});
+    transfer(from, to, quantity, memo); // needs to be inlined.
+}
+
+void token::updaterate(uint8_t network, uint64_t rate)
+{
+    require_auth(_self);
+    exrates exrates_table(_self, _self); // code: _self, scope: _self
+    auto itr = exrates_table.find(network);
+    if (itr != exrates_table.end())
+    {
+        // create
+        exrates_table.emplace(_self, [&](auto &rt) {
+            rt.network = network;
+            rt.rate = rate;
+            rt.updated = now();
+        });
+    }
+    else
+    {
+        // update
+        exrates_table.modify(itr, _self, [&](auto &rt) {
+            rt.rate = rate;
+            rt.updated = now();
+        });
+    }
 }
 
 // PRIVATE UTILITY MEM-FUNCT'S DEFINITIONS
@@ -207,7 +217,7 @@ void token::launch_lock(account_name to, asset quantity, uint64_t launch_date)
     }
 }
 
-void token::set_gradual_lock(account_name to, asset quantity)
+void token::gradual_lock(account_name to, asset quantity)
 {
     gradunlocks gradual_unlock_table(_self, _self);
     transferlocks transfer_lock_table(_self, _self);
@@ -249,6 +259,34 @@ void token::set_gradual_lock(account_name to, asset quantity)
     }
 }
 
+void token::issuer_active_permission_check(asset quantity)
+{
+    auto sym = quantity.symbol;
+    eosio_assert(sym.is_valid(), "invalid symbol name");
+    auto sym_name = sym.name();
+    stats statstable(_self, sym_name);
+    auto existing = statstable.find(sym_name);
+    eosio_assert(existing != statstable.end(), "token with symbol does not exist, create token before issue");
+    const auto &st = *existing;
+    require_auth2(st.issuer, N(active));
+}
+
+void token::issuer_and_asset_check(asset quantity)
+{
+    auto sym = quantity.symbol;
+    eosio_assert(sym.is_valid(), "invalid symbol name");
+    auto sym_name = sym.name();
+    stats statstable(_self, sym_name);
+    auto existing = statstable.find(sym_name);
+    eosio_assert(existing != statstable.end(), "token with symbol does not exist, create token before issue");
+    const auto &st = *existing;
+    require_auth2(st.issuer, N(active));
+
+    eosio_assert(quantity.is_valid(), "invalid quantity");
+    eosio_assert(quantity.amount > 0, "must issue positive quantity");
+    eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
+    eosio_assert(quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
+
 void token::updaterate(uint8_t network, uint64_t rate) {
     require_auth(_self);
     exrates exrates_table(_self, _self); // code: _self, scope: _self
@@ -271,4 +309,4 @@ void token::updaterate(uint8_t network, uint64_t rate) {
 
 } // namespace eosio
 
-EOSIO_ABI(eosio::token, (create)(issue)(transfer)(setgrunlock)(launchlock)(gradlock))
+EOSIO_ABI(eosio::token, (create)(issue)(transfer)(setgrunlock)(launchlock)(gradlock)(distribsale)(distribcontr)(updaterate))
