@@ -120,6 +120,40 @@
         }
       ]
     },{
+      "name": "distribsale",
+      "base": "",
+      "fields": [{
+          "name": "from",
+          "type": "name"
+        },{
+          "name": "to",
+          "type": "name"
+        },{
+          "name": "quantity",
+          "type": "asset"
+        },{
+          "name": "memo",
+          "type": "string"
+        }
+      ]
+    },{
+      "name": "distribcontr",
+      "base": "",
+      "fields": [{
+          "name": "from",
+          "type": "name"
+        },{
+          "name": "to",
+          "type": "name"
+        },{
+          "name": "quantity",
+          "type": "asset"
+        },{
+          "name": "memo",
+          "type": "string"
+        }
+      ]
+    },{
       "name": "updaterate",
       "base": "",
       "fields": [{
@@ -157,13 +191,33 @@
       "type": "gradlock",
       "ricardian_contract": ""
     },{
+      "name": "distribsale",
+      "type": "distribsale",
+      "ricardian_contract": ""
+    },{
+      "name": "distribcontr",
+      "type": "distribcontr",
+      "ricardian_contract": ""
+    },{
       "name": "updaterate",
       "type": "updaterate",
       "ricardian_contract": ""
     }
   ],
   "tables": [{
-      "name": "gradunlocks",
+      "name": "accounts",
+      "type": "account",
+      "index_type": "i64",
+      "key_names" : ["currency"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "stat",
+      "type": "currency_stats",
+      "index_type": "i64",
+      "key_names" : ["currency"],
+      "key_types" : ["uint64"]
+    },{
+      "name": "gradunlock",
       "index_type": "i64",
       "key_names": [
         "locked_until"
