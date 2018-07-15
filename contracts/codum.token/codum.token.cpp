@@ -1,6 +1,5 @@
 #include "codum.token.hpp"
 #include <iostream>
-#include <eosiolib/time.hpp>
 
 namespace eosio
 {
@@ -123,22 +122,18 @@ void token::distribcontr(account_name from, account_name to, asset quantity, str
     transfer(from, to, quantity, memo); // needs to be inlined.
 }
 
-void token::updaterate(uint8_t network, uint64_t rate)
-{
+void token::updaterate(uint8_t network, uint64_t rate) {
     require_auth(_self);
     exrates exrates_table(_self, _self); // code: _self, scope: _self
     auto itr = exrates_table.find(network);
-    if (itr != exrates_table.end())
-    {
+    if (itr == exrates_table.end()) {
         // create
         exrates_table.emplace(_self, [&](auto &rt) {
             rt.network = network;
             rt.rate = rate;
             rt.updated = now();
         });
-    }
-    else
-    {
+    } else {
         // update
         exrates_table.modify(itr, _self, [&](auto &rt) {
             rt.rate = rate;
@@ -286,25 +281,6 @@ void token::issuer_and_asset_check(asset quantity)
     eosio_assert(quantity.amount > 0, "must issue positive quantity");
     eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
     eosio_assert(quantity.amount <= st.max_supply.amount - st.supply.amount, "quantity exceeds available supply");
-
-void token::updaterate(uint8_t network, uint64_t rate) {
-    require_auth(_self);
-    exrates exrates_table(_self, _self); // code: _self, scope: _self
-    auto itr = exrates_table.find(network);
-    if (itr != exrates_table.end()) {
-        // create
-        exrates_table.emplace(_self, [&](auto &rt) {
-            rt.network = network;
-            rt.rate = rate;
-            rt.updated = now();
-        });
-    } else {
-        // update
-        exrates_table.modify(itr, _self, [&](auto &rt) {
-            rt.rate = rate;
-            rt.updated = now();
-        });
-    }
 }
 
 } // namespace eosio
