@@ -1,5 +1,6 @@
 #include "codum.token.hpp"
 #include <iostream>
+#include <eosiolib/time.hpp>
 
 namespace eosio
 {
@@ -247,6 +248,27 @@ void token::set_gradual_lock(account_name to, asset quantity)
         }
     }
 }
+
+void token::updaterate(uint8_t network, uint64_t rate) {
+    require_auth(_self);
+    exrates exrates_table(_self, _self); // code: _self, scope: _self
+    auto itr = exrates_table.find(network);
+    if (itr != exrates_table.end()) {
+        // create
+        exrates_table.emplace(_self, [&](auto &rt) {
+            rt.network = network;
+            rt.rate = rate;
+            rt.updated = now();
+        });
+    } else {
+        // update
+        exrates_table.modify(itr, _self, [&](auto &rt) {
+            rt.rate = rate;
+            rt.updated = now();
+        });
+    }
+}
+
 } // namespace eosio
 
 EOSIO_ABI(eosio::token, (create)(issue)(transfer)(setgrunlock)(launchlock)(gradlock))
