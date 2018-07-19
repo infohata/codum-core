@@ -76,6 +76,23 @@ void token::transfer(account_name from,
     eosio_assert(quantity.symbol == st.supply.symbol, "symbol precision mismatch");
     eosio_assert(memo.size() <= 256, "memo has more than 256 bytes");
 
+    // transfer lock check
+    transferlocks transfer_lock_table(_self, _self);
+    auto accidx = transfer_lock_table.get_index<N(acc)>();
+    auto itr = accidx.lower_bound(from);
+
+    time current_time = now();
+    
+    for (; itr != accidx.end() && itr->account == to; ++itr) // visiting all such accounts.
+    {
+        if (itr->locked_until > current_time)
+        {
+            accounts from_acnts(_self, from);
+            const auto &sender = from_acnts.get(quantity.symbol.name(), "no balance object found");
+            eosio_assert(quantity.amount <= (int64_t)((sender.balance.amount - itr->locked_balance)), "locked tokens cannot be transferred");
+        }
+    }
+    // transfer lock check
     sub_balance(from, quantity);
     add_balance(to, quantity, from);
 }
@@ -122,18 +139,22 @@ void token::distribcontr(account_name from, account_name to, asset quantity, str
     transfer(from, to, quantity, memo); // needs to be inlined.
 }
 
-void token::updaterate(uint8_t network, uint64_t rate) {
+void token::updaterate(uint8_t network, uint64_t rate)
+{
     require_auth(_self);
     exrates exrates_table(_self, _self); // code: _self, scope: _self
     auto itr = exrates_table.find(network);
-    if (itr == exrates_table.end()) {
+    if (itr == exrates_table.end())
+    {
         // create
         exrates_table.emplace(_self, [&](auto &rt) {
             rt.network = network;
             rt.rate = rate;
             rt.updated = now();
         });
-    } else {
+    }
+    else
+    {
         // update
         exrates_table.modify(itr, _self, [&](auto &rt) {
             rt.rate = rate;
