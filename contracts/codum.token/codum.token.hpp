@@ -54,30 +54,55 @@ public:
   void distribcontr(account_name from, account_name to, asset quantity, string memo);
 
   // @abi action
+  void setdistrib(asset currency, account_name distributor);
+
+  // @abi action
   void updaterate(uint8_t network, uint64_t rate);
 
   inline asset get_supply(symbol_name sym) const;
   inline asset get_balance(account_name owner, symbol_name sym) const;
 
+  /// @abi table exrate i64
+  struct exrate
+  {
+    uint8_t network;
+    uint64_t rate;
+    uint64_t updated;
+
+    uint8_t primary_key() const { return network; }
+
+    EOSLIB_SERIALIZE(exrate, (network)(rate)(updated))
+  };
+
+  typedef eosio::multi_index<N(exrate), exrate> exrates;
+
 private:
+  /// @abi table accounts i64
   struct account
   {
     asset balance;
 
     uint64_t primary_key() const { return balance.symbol.name(); }
+
+    EOSLIB_SERIALIZE(account, (balance))
   };
 
-  struct currency_stats
+  typedef eosio::multi_index<N(accounts), account> accounts;
+
+  /// @abi table stat i64
+  struct stat
   {
     asset supply;
     asset max_supply;
     account_name issuer;
+    account_name distributor;
 
     uint64_t primary_key() const { return supply.symbol.name(); }
+
+    EOSLIB_SERIALIZE(stat, (supply)(max_supply)(issuer)(distributor))
   };
 
-  typedef eosio::multi_index<N(accounts), account> accounts;
-  typedef eosio::multi_index<N(stat), currency_stats> stats;
+  typedef eosio::multi_index<N(stat), stat> stats;
 
   /// @abi table gradunlock i64
   struct gradunlock
@@ -112,27 +137,12 @@ private:
                                         const_mem_fun<transferlock, uint64_t, &transferlock::get_account>>>
       transferlocks;
 
-  /// @abi table exrate i64
-  struct exrate
-  {
-    uint8_t network;
-    uint64_t rate;
-    uint64_t updated;
-
-    uint8_t primary_key() const { return network; }
-
-    EOSLIB_SERIALIZE(exrate, (network)(rate)(updated))
-  };
-
-  typedef eosio::multi_index<N(exrate), exrate> exrates;
-
   // PRIVATE UTILITY FUNCTIONS
   void launch_lock(account_name to, asset quantity, uint64_t launch_date);
   void gradual_lock(account_name to, asset quantity);
   void sub_balance(account_name owner, asset value);
   void add_balance(account_name owner, asset value, account_name ram_payer);
-  void issuer_active_permission_check(asset quantity);
-  void issuer_and_asset_check(asset quantity);
+  void check_distributor_and_asset(const asset& quantity) const;
 
 public:
   struct transfer_args

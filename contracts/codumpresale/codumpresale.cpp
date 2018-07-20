@@ -1,7 +1,9 @@
 #include "codumpresale.hpp"
 
-void codumpresale::apply(account_name contributor,
-                         bool acceptedterms)
+#include <../codum.token/codum.token.hpp>
+
+void codumpresale::apply(const account_name contributor,
+                         const bool acceptedterms)
 {
   require_auth(contributor);
 
@@ -23,7 +25,7 @@ void codumpresale::apply(account_name contributor,
   }
 }
 
-void codumpresale::approve(account_name contributor)
+void codumpresale::approve(const account_name contributor)
 {
   require_auth(_self);
   eosio_assert(is_account(contributor), "contributor account does not exist");
@@ -39,4 +41,42 @@ void codumpresale::approve(account_name contributor)
   });
 }
 
-EOSIO_ABI(codumpresale, (apply)(approve))
+void codumpresale::buycodum(const account_name contributor,
+                            const uint8_t network,
+                            const asset& quantity,
+                            const string& memo)
+{
+  require_auth(contributor);
+  eosio_assert(get_sale_state(hardcap) > 0, "hard cap reached");
+
+  contributions contribution_table(_self, _self);
+
+  contribution_table.emplace(_self, [&](auto &ct) {
+    ct.contributor = contributor;
+    ct.network = network;
+    ct.quantity = quantity;
+    ct.datetime = now();
+    ct.memo = memo;
+
+    token::exrates exrate_table(N(codum.token), N(codum.token));
+    auto rt = exrate_table.find(network);
+    eosio_assert(rt != exrate_table.end(), "no such network in codum.token exrates table");
+
+    ct.rate = rt->rate;
+    ct.codum_dist = asset(ct.quantity.amount * ct.rate, S(4,CODUM));
+
+    if (network == NETWORK_EOS) {
+      eosio_assert(is_contributor_approved(contributor), "please wait while we approve your participation");
+
+      action(
+        permission_level{ contributor, N(active) },
+        N(eosio.token), N(transfer),
+        std::make_tuple(contributor, _self, quantity, ct.memo)
+      ).send();
+
+      ct.validated = now();
+    }
+  });
+}
+
+EOSIO_ABI(codumpresale, (apply)(approve)(buycodum))
