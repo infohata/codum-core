@@ -154,8 +154,7 @@ void token::distribcontr(account_name from, account_name to, asset quantity, str
     transfer(from, to, quantity, memo); // needs to be inlined.
 }
 
-void token::updaterate(uint8_t network, uint64_t rate)
-{
+void token::updaterate(uint8_t network, uint64_t rate) {
     require_auth(_self);
     exrates exrates_table(_self, _self); // code: _self, scope: _self
     auto itr = exrates_table.find(network);
@@ -167,9 +166,7 @@ void token::updaterate(uint8_t network, uint64_t rate)
             rt.rate = rate;
             rt.updated = now();
         });
-    }
-    else
-    {
+    } else {
         // update
         exrates_table.modify(itr, _self, [&](auto &rt) {
             rt.rate = rate;
