@@ -52,25 +52,26 @@ void codumpresale::buycodum(const account_name contributor,
   contributions contribution_table(_self, _self);
 
   contribution_table.emplace(_self, [&](auto &ct) {
+    ct.id = contribution_table.available_primary_key();
     ct.contributor = contributor;
     ct.network = network;
     ct.quantity = quantity;
     ct.datetime = now();
     ct.memo = memo;
 
-    token::exrates exrate_table(N(codum.token), N(codum.token));
+    token::exrates exrate_table(N(codumtestnet), N(codumtestnet)); // TODO: abstract to configurable const on the top of .cpp;
     auto rt = exrate_table.find(network);
     eosio_assert(rt != exrate_table.end(), "no such network in codum.token exrates table");
 
     ct.rate = rt->rate;
-    ct.codum_dist = asset(ct.quantity.amount * ct.rate, S(4,CODUM));
+    ct.codum_dist = asset(ct.quantity.amount * ct.rate / 10000, S(4,CODUM));
 
     if (network == NETWORK_EOS) {
       eosio_assert(is_contributor_approved(contributor), "please wait while we approve your participation");
 
       action(
         permission_level{ contributor, N(active) },
-        N(eosio.token), N(transfer),
+        N(codumtestnet), N(transfer),
         std::make_tuple(contributor, _self, quantity, ct.memo)
       ).send();
 
