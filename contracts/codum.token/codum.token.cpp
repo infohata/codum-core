@@ -113,8 +113,8 @@ void token::setgrunlock(uint64_t date, uint8_t percent) // WIP
 void token::launchlock(account_name to, asset quantity)
 {
     token::check_distributor_and_asset(quantity);
-    /*uint64_t launch_date = stactic_cast<uint64_t>(1567987200)//==> epoch time in seconds corressponding to  Monday, 9 September 2019 00:00:00 GMT*/
-    uint64_t launch_date = 1000; // launch date for testing.
+    /*time launch_date = stactic_cast<uint64_t>(1567987200)//==> epoch time in seconds corressponding to  Monday, 9 September 2019 00:00:00 GMT*/
+    time launch_date = 1000; // launch date for testing.
     token::launch_lock(to, quantity, launch_date);
 }
 
@@ -129,7 +129,8 @@ void token::distribsale(account_name from, account_name to, asset quantity, stri
     require_auth2(from, N(active)); // from and issuer should be same.
 
     SEND_INLINE_ACTION(*this, launchlock, {from, N(active)}, {to, quantity});
-    transfer(from, to, quantity, memo); // needs to be inlined
+    SEND_INLINE_ACTION(*this, transfer, {from, N(active)}, {from, to, quantity, memo});
+    // transfer(from, to, quantity, memo); // needs to be inlined
 }
 
 void token::setdistrib(asset currency, account_name distributor)
@@ -151,7 +152,8 @@ void token::distribcontr(account_name from, account_name to, asset quantity, str
     require_auth2(from, N(active)); // from and issuer should be same.
 
     SEND_INLINE_ACTION(*this, gradlock, {from, N(active)}, {to, quantity});
-    transfer(from, to, quantity, memo); // needs to be inlined.
+    SEND_INLINE_ACTION(*this, transfer, {from, N(active)}, {from, to, quantity, memo});
+    // transfer(from, to, quantity, memo); // needs to be inlined.
 }
 
 void token::updaterate(uint8_t network, uint64_t rate) {
