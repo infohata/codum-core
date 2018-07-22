@@ -9,6 +9,8 @@
 using std::string;
 using namespace eosio;
 
+const account_name tokencontract = N(codumtestnet);
+
 
 class codumpresale : public contract
 {

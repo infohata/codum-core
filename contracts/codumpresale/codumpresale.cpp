@@ -59,7 +59,7 @@ void codumpresale::buycodum(const account_name contributor,
     ct.datetime = now();
     ct.memo = memo;
 
-    token::exrates exrate_table(N(codumtestnet), N(codumtestnet)); // TODO: abstract to configurable const on the top of .cpp;
+    token::exrates exrate_table(tokencontract, tokencontract); // TODO: abstract to configurable const on the top of .hpp;
     auto rt = exrate_table.find(network);
     eosio_assert(rt != exrate_table.end(), "no such network in codum.token exrates table");
 
@@ -70,8 +70,8 @@ void codumpresale::buycodum(const account_name contributor,
       eosio_assert(is_contributor_approved(contributor), "please wait while we approve your participation");
 
       action(
-        permission_level{ contributor, N(active) },
-        N(codumtestnet), N(transfer),
+        { contributor, N(active) },
+        tokencontract, N(transfer),
         std::make_tuple(contributor, _self, quantity, ct.memo)
       ).send();
 
