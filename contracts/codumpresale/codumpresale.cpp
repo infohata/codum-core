@@ -48,6 +48,7 @@ void codumpresale::buycodum(const account_name contributor,
 {
   require_auth(contributor);
   eosio_assert(get_sale_state(hardcap) > 0, "hard cap reached");
+  eosio_assert(is_contributor_approved(contributor), "please wait while we approve your participation");
 
   contributions contribution_table(_self, _self);
 
@@ -66,17 +67,16 @@ void codumpresale::buycodum(const account_name contributor,
     ct.rate = rt->rate;
     ct.codum_dist = asset(ct.quantity.amount * ct.rate / 10000, S(4,CODUM));
 
-    if (network == NETWORK_EOS) {
-      eosio_assert(is_contributor_approved(contributor), "please wait while we approve your participation");
+    // if (network == NETWORK_EOS) {
 
-      action(
-        { contributor, N(active) },
-        tokencontract, N(transfer),
-        std::make_tuple(contributor, _self, quantity, ct.memo)
-      ).send();
+      // action(
+      //   { contributor, N(active) },
+      //   tokencontract, N(transfer),
+      //   std::make_tuple(contributor, _self, quantity, ct.memo)
+      // ).send();
 
-      ct.validated = now();
-    }
+      // ct.validated = now();
+    // }
   });
 }
 
