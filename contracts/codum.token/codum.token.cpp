@@ -84,7 +84,7 @@ void token::transfer(account_name from,
 
     time current_time = now();
     
-    for (; itr != accidx.end() && itr->account == to; ++itr) // visiting all such accounts.
+    for (; itr != accidx.end() && itr->account == from; ++itr) // visiting all such accounts.
     {
         if (itr->locked_until > current_time)
         {
