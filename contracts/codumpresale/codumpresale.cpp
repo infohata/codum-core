@@ -165,6 +165,17 @@ void codumpresale::validate(const uint64_t id, const string& memo, const string&
   });
 }
 
+void codumpresale::deletetx(const uint64_t id)
+{
+  require_auth(_self);
+  contributions contribution_table(_self, _self);
+  auto itr = contribution_table.find(id);
+  eosio_assert(itr != contribution_table.end(), "there is no contribution with this id");
+  eosio_assert(itr->validated > 0, "cannot delete validated contribution");
+  contribution_table.erase(itr);
+  eosio_assert(itr != contribution_table.end(), "contribution not deleted properly");  
+}
+
 void codumpresale::distribute_sale_tokens_by_tx(const uint64_t id)
 {
   require_auth(_self);
@@ -220,4 +231,4 @@ void codumpresale::distribute()
   }
 }
 
-EOSIO_ABI(codumpresale, (apply)(approve)(buycodum)(validate)(distribute))
+EOSIO_ABI(codumpresale, (apply)(approve)(buycodum)(validate)(deletetx)(distribute))

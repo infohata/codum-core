@@ -35,6 +35,9 @@ public:
   /// @abi action
   void distribute();
 
+  /// @abi action
+  void deletetx(const uint64_t id);
+
   inline int64_t get_bonus_state(const uint8_t stage) const;
   inline int64_t get_sale_state(const asset& cap) const;
 

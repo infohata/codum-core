@@ -57,7 +57,7 @@ public:
   void setdistrib(asset currency, account_name distributor);
 
   // @abi action
-  void updaterate(uint8_t network, uint64_t rate);
+  void updaterate(uint8_t network, uint32_t rate);
 
   inline asset get_supply(symbol_name sym) const;
   inline asset get_balance(account_name owner, symbol_name sym) const;
