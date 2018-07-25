@@ -125,6 +125,7 @@ void codumpresale::buycodum(const account_name contributor,
       // ).send();
       // ct.validated = now();
     // }
+  });
 }
 
 void codumpresale::validate(const uint64_t id, const string& memo, const string& transaction)
