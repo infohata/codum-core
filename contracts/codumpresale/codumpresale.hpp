@@ -76,7 +76,7 @@ private:
     uint64_t id;
     account_name contributor;
     uint8_t network;
-    int32_t rate;
+    int64_t rate;
     asset quantity;
     string memo;
     string transaction;
@@ -94,12 +94,6 @@ private:
     account_name get_contributor() const { return contributor; }
     uint64_t get_datetime() const { return datetime; }
 
-    // uint256_t get_memo() const {
-    //   checksum256 hash;
-    //   // sha256()
-    //   return hash;
-    // }
-
     EOSLIB_SERIALIZE(contribution, (id)(contributor)(network)(rate)
                                    (quantity)(memo)(transaction)(datetime)
                                    (validated)(codum_dist)(codum_bonus)
@@ -110,8 +104,6 @@ private:
   typedef eosio::multi_index<N(contribution), contribution,
                              indexed_by<N(contributor),
                                         const_mem_fun<contribution, uint64_t, &contribution::get_contributor>>,
-                             // indexed_by<N(memo),
-                             //            const_mem_fun<contribution, uint256_t, &contribution::get_memo>>,
                              indexed_by<N(datetime),
                                         const_mem_fun<contribution, uint64_t, &contribution::get_datetime>>>
       contributions;
