@@ -41,8 +41,8 @@ public:
   inline bool is_contributor_approved(const account_name contributor) const;
 
 
-  const time start = 1532433600; // Tue Jul 24 2018 12:00:00 GMT+0000
-  const time end = 1537790400;   // Tue Sep 24 2018 12:00:00 GMT+0000
+  const time start = 1532033600; // Tue Jul 24 2018 12:00:00 GMT+0000 //1532433600
+  const time end = 1537790400;   // Tue Sep 24 2018 12:00:00 GMT+0000 //1537790400
 
   const int64_t softcap_i = 38400000000;
   const int64_t hardcap_i = 192000000000;
