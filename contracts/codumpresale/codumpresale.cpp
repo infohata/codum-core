@@ -118,16 +118,13 @@ void codumpresale::buycodum(const account_name contributor,
     ct.codum_bonus = asset(0, S(4,CODUM));
 
     // if (network == NETWORK_EOS) {
-
       // action(
       //   { contributor, N(active) },
       //   tokencontract, N(transfer),
       //   std::make_tuple(contributor, _self, quantity, ct.memo)
       // ).send();
-
       // ct.validated = now();
     // }
-  });
 }
 
 void codumpresale::validate(const uint64_t id, const string& memo, const string& transaction)
@@ -203,6 +200,7 @@ void codumpresale::distribute_sale_tokens_by_tx(const uint64_t id)
       dt.refund = dt.codum_dist / dt.rate;
       dt.distrib_tx = "";
     }
+
   });
 }
 
