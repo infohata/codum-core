@@ -124,15 +124,26 @@
         }
       ]
     },{
-      "name": "distribute",
-      "base": "",
-      "fields": []
-    },{
       "name": "deletetx",
       "base": "",
       "fields": [{
           "name": "id",
           "type": "uint64"
+        }
+      ]
+    },{
+      "name": "distribute",
+      "base": "",
+      "fields": []
+    },{
+      "name": "refundsale",
+      "base": "",
+      "fields": [{
+          "name": "id",
+          "type": "uint64"
+        }, {
+          "name": "refund_tx",
+          "type": "string"
         }
       ]
     }
@@ -156,6 +167,10 @@
     },{
       "name": "distribute",
       "type": "distribute",
+      "ricardian_contract": ""
+    },{
+      "name": "refundsale",
+      "type": "refundsale",
       "ricardian_contract": ""
     },{
       "name": "deletetx",
