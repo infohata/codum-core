@@ -167,4 +167,58 @@ void codumpresale::validate(const uint64_t id, const string& memo, const string&
   });
 }
 
-EOSIO_ABI(codumpresale, (apply)(approve)(buycodum)(validate))
+void codumpresale::distribute_sale_tokens_by_tx(const uint64_t id)
+{
+  require_auth(_self);
+  eosio_assert(get_sale_state(softcap) < 0, "cannot distribute tokens before reaching soft cap");
+
+  contributions contribution_table(_self, _self);
+  auto itr = contribution_table.find(id);
+  eosio_assert(itr != contribution_table.end(), "there is no contribution with this id");
+
+  contribution_table.modify(itr, _self, [&](auto &dt) {
+    eosio_assert(dt.validated > 0, "contribution is not validated");
+    eosio_assert(dt.refunded == 0, "contribution is refunded");
+
+    auto hardcapLeft = get_sale_state(hardcap);
+
+    if (hardcapLeft > 0) {
+      auto dc = asset(0, S(4, CODUM));
+
+      if (hardcapLeft < dt.codum_dist.amount) {
+        dc.amount = hardcapLeft;
+        dt.refund = dt.quantity - (dt.codum_dist - dc) / dt.rate;
+      } else {
+        dc = dt.codum_dist + dt.codum_bonus;
+      }
+
+      action(
+        { _self, N(active) },
+        tokencontract, N(distribsale),
+        std::make_tuple(_self, dt.contributor, dc, "codum private sale: " + dt.memo)
+      ).send();
+
+      dt.distributed = now(); 
+    } else {
+      dt.refund = dt.codum_dist / dt.rate;
+      dt.distrib_tx = "";
+    }
+  });
+}
+
+void codumpresale::distribute()
+{
+  require_auth(_self);
+  eosio_assert(get_sale_state(softcap) < 0, "cannot distribute tokens before reaching soft cap");
+
+  contributions contribution_table(_self, _self);
+  auto datetimeIndex = contribution_table.get_index<N(datetime)>();
+
+  for (const auto& dt: datetimeIndex) {
+    if (dt.validated > 0 && dt.distributed == 0) {
+      distribute_sale_tokens_by_tx(dt.id);
+    }
+  }
+}
+
+EOSIO_ABI(codumpresale, (apply)(approve)(buycodum)(validate)(distribute))

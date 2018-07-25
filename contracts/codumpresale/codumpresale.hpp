@@ -32,6 +32,9 @@ public:
   /// @abi action
   void validate(const uint64_t id, const string& memo, const string& transaction);
 
+  /// @abi action
+  void distribute();
+
   inline int64_t get_bonus_state(const uint8_t stage) const;
   inline int64_t get_sale_state(const asset& cap) const;
 
@@ -47,10 +50,12 @@ public:
   const asset softcap = asset(softcap_i, S(4, CODUM));
   const asset hardcap = asset(hardcap_i, S(4, CODUM));
 
-  const int64_t bonus[2] = { 50, 25 };
+  const int8_t bonus[2] = { 50, 25 };
   const asset bonus_thr[2] = { asset(19200000000, S(4, CODUM)), asset(38400000000, S(4, CODUM)) };
 
 private:
+  void distribute_sale_tokens_by_tx(const uint64_t id);
+
   /// @abi table whitelist i64
   struct whitelist
   {

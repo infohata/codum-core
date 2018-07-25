@@ -123,6 +123,10 @@
           "type": "string"
         }
       ]
+    },{
+      "name": "distribute",
+      "base": "",
+      "fields": []
     }
   ],
   "actions": [{
@@ -140,6 +144,10 @@
     },{
       "name": "validate",
       "type": "validate",
+      "ricardian_contract": ""
+    },{
+      "name": "distribute",
+      "type": "distribute",
       "ricardian_contract": ""
     }
   ],
