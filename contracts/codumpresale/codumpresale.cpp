@@ -225,7 +225,7 @@ void codumpresale::distribute_sale_tokens_by_tx(const uint64_t id)
       action(
           {_self, N(active)},
           tokencontract, N(distribsale),
-          std::make_tuple(_self, dt.contributor, dc, "codum private sale: " + dt.memo))
+          std::make_tuple(_self, dt.contributor, dc, dt.memo))
           .send();
 
       dt.distributed = now();
@@ -269,7 +269,7 @@ void codumpresale::refundsale(uint64_t id, string refund_tx)
       action(
           {N(codumpresale), N(active)},
           tokencontract, N(transfer),
-          std::make_tuple(N(codumpresale), r->contributor, r->refund, std::string(std::strcat("codum refund: ", r->memo.c_str()))))
+          std::make_tuple(N(codumpresale), r->contributor, r->refund, r->memo))
           .send();
       contribution_table.modify(r, _self, [&](auto &val) {
         val.refunded = now();
