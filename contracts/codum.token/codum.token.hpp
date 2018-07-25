@@ -66,7 +66,7 @@ public:
   struct exrate
   {
     uint8_t network;
-    uint64_t rate;
+    uint32_t rate;
     uint64_t updated;
 
     uint8_t primary_key() const { return network; }
