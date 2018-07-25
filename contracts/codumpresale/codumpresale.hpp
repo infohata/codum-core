@@ -41,16 +41,16 @@ public:
   inline bool is_contributor_approved(const account_name contributor) const;
 
 
-  const time start = 1532433600; // Tue Jul 24 2018 12:00:00 GMT+0000
-  const time end = 1537790400;   // Tue Sep 24 2018 12:00:00 GMT+0000
+  const time start = 1532433600; // Tue Jul 24 2018 12:00:00 GMT+0000 //1532433600
+  const time end = 1537790400;   // Tue Sep 24 2018 12:00:00 GMT+0000 //1537790400
 
-  const int64_t softcap_i = 38400000000;
-  const int64_t hardcap_i = 192000000000;
+  const uint64_t softcap_i = 38400000000;
+  const uint64_t hardcap_i = 192000000000;
 
   const asset softcap = asset(softcap_i, S(4, CODUM));
   const asset hardcap = asset(hardcap_i, S(4, CODUM));
 
-  const int8_t bonus[2] = { 50, 25 };
+  const uint8_t bonus[2] = { 50, 25 };
   const asset bonus_thr[2] = { asset(19200000000, S(4, CODUM)), asset(38400000000, S(4, CODUM)) };
 
 private:
@@ -76,7 +76,7 @@ private:
     uint64_t id;
     account_name contributor;
     uint8_t network;
-    int32_t rate;
+    uint32_t rate;
     asset quantity;
     string memo;
     string transaction;
@@ -94,12 +94,6 @@ private:
     account_name get_contributor() const { return contributor; }
     uint64_t get_datetime() const { return datetime; }
 
-    // uint256_t get_memo() const {
-    //   checksum256 hash;
-    //   // sha256()
-    //   return hash;
-    // }
-
     EOSLIB_SERIALIZE(contribution, (id)(contributor)(network)(rate)
                                    (quantity)(memo)(transaction)(datetime)
                                    (validated)(codum_dist)(codum_bonus)
@@ -110,8 +104,6 @@ private:
   typedef eosio::multi_index<N(contribution), contribution,
                              indexed_by<N(contributor),
                                         const_mem_fun<contribution, uint64_t, &contribution::get_contributor>>,
-                             // indexed_by<N(memo),
-                             //            const_mem_fun<contribution, uint256_t, &contribution::get_memo>>,
                              indexed_by<N(datetime),
                                         const_mem_fun<contribution, uint64_t, &contribution::get_datetime>>>
       contributions;
