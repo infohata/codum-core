@@ -41,16 +41,16 @@ public:
   inline bool is_contributor_approved(const account_name contributor) const;
 
 
-  const time start = 1532033600; // Tue Jul 24 2018 12:00:00 GMT+0000 //1532433600
+  const time start = 1532433600; // Tue Jul 24 2018 12:00:00 GMT+0000 //1532433600
   const time end = 1537790400;   // Tue Sep 24 2018 12:00:00 GMT+0000 //1537790400
 
-  const int64_t softcap_i = 38400000000;
-  const int64_t hardcap_i = 192000000000;
+  const uint64_t softcap_i = 38400000000;
+  const uint64_t hardcap_i = 192000000000;
 
   const asset softcap = asset(softcap_i, S(4, CODUM));
   const asset hardcap = asset(hardcap_i, S(4, CODUM));
 
-  const int8_t bonus[2] = { 50, 25 };
+  const uint8_t bonus[2] = { 50, 25 };
   const asset bonus_thr[2] = { asset(19200000000, S(4, CODUM)), asset(38400000000, S(4, CODUM)) };
 
 private:
@@ -76,7 +76,7 @@ private:
     uint64_t id;
     account_name contributor;
     uint8_t network;
-    int64_t rate;
+    uint32_t rate;
     asset quantity;
     string memo;
     string transaction;
