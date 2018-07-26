@@ -112,6 +112,19 @@ void codumpresale::buycodum(const account_name contributor,
 
   contributions contribution_table(_self, _self);
 
+  auto contributorIndex = contribution_table.get_index<N(contributor)>();
+
+  uint8_t counter = 0;
+  auto lower = contributorIndex.lower_bound(contributor);
+  auto upper = contributorIndex.upper_bound(contributor);
+  
+  for (auto itr = lower; itr != upper; itr++)
+  {
+    counter++;
+  }
+
+  eosio_assert(counter < 3, "contributor cannot have more than 3 unverified transactions");
+
   contribution_table.emplace(_self, [&](auto &ct) {
     ct.id = contribution_table.available_primary_key();
     ct.contributor = contributor;
@@ -193,9 +206,8 @@ void codumpresale::deletetx(const uint64_t id)
   eosio_assert(itr != contribution_table.end(), "contribution not deleted properly");  
 }
 
-void codumpresale::distribute_sale_tokens_by_tx(const uint64_t id)
+void codumpresale::distribute(const uint64_t id)
 {
-  require_auth(_self);
   eosio_assert(get_sale_state(softcap) < 0, "cannot distribute tokens before reaching soft cap");
 
   contributions contribution_table(_self, _self);
@@ -236,23 +248,6 @@ void codumpresale::distribute_sale_tokens_by_tx(const uint64_t id)
       dt.distrib_tx = "";
     }
   });
-}
-
-void codumpresale::distribute()
-{
-  require_auth(_self);
-  eosio_assert(get_sale_state(softcap) < 0, "cannot distribute tokens before reaching soft cap");
-
-  contributions contribution_table(_self, _self);
-  auto datetimeIndex = contribution_table.get_index<N(datetime)>();
-
-  for (const auto &dt : datetimeIndex)
-  {
-    if (dt.validated > 0 && dt.distributed == 0)
-    {
-      distribute_sale_tokens_by_tx(dt.id);
-    }
-  }
 }
 
 void codumpresale::refundsale(uint64_t id, string refund_tx)

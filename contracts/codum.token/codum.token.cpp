@@ -143,6 +143,7 @@ void token::setdistrib(asset currency, account_name distributor)
     eosio_assert(itr != statstable.end(), "token with symbol does not exist");
 
     statstable.modify(itr, _self, [&](auto &st) {
+        require_auth(st.issuer);
         st.distributor = distributor;    
     });
 }

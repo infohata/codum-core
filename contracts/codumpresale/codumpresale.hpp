@@ -33,7 +33,7 @@ public:
   void deletetx(const uint64_t id);
 
   /// @abi action
-  void distribute();
+  void distribute(const uint64_t id);
 
   /// @abi action
   void refundsale(uint64_t id, string refund_tx);
