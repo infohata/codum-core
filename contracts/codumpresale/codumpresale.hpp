@@ -36,7 +36,7 @@ public:
   void distribute(const uint64_t id);
 
   /// @abi action
-  void refundsale(uint64_t id, string refund_tx);
+  void refundsale(uint64_t id, string refund_tx = "");
 
   inline int64_t get_bonus_state(const uint8_t stage) const;
   inline int64_t get_sale_state(const asset &cap) const;
