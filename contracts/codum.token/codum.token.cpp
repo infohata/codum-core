@@ -299,12 +299,12 @@ void token::check_distributor_and_asset(const asset& quantity) const
     auto st = statstable.find(sym_name);
     eosio_assert(st != statstable.end(), "token with symbol does not exist");
     eosio_assert(st->distributor, "distributor of this symbol is not set");
+    
     require_auth2(st->distributor, N(active));
 
     eosio_assert(quantity.is_valid(), "invalid quantity");
     eosio_assert(quantity.amount > 0, "must issue positive quantity");
     eosio_assert(quantity.symbol == st->supply.symbol, "symbol precision mismatch");
-    eosio_assert(quantity.amount <= st->max_supply.amount - st->supply.amount, "quantity exceeds available supply");
 }
 
 } // namespace eosio
