@@ -263,6 +263,8 @@ void codumpresale::refundsale(uint64_t id, string refund_tx)
   contributions contribution_table(_self, _self);
 
   auto r = contribution_table.find(id);
+  eosio_assert(r != contribution_table.end(), "there is no contribution with this id");
+  eosio_assert(r->refunded == 0, "contribution is already refunded");
   if (r->validated > 0 && r->refund.amount > 0)
   {
     if (r->network == NETWORK_EOS)
