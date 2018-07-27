@@ -107,8 +107,9 @@ void codumpresale::buycodum(const account_name contributor,
                             const string &memo)
 {
   require_auth(contributor);
-  eosio_assert(get_sale_state(hardcap) > 0, "hard cap reached");
+  eosio_assert(get_sale_state(hardcap) > 1, "hard cap reached");
   eosio_assert(is_contributor_approved(contributor), "please wait while we approve your participation");
+  eosio_assert(end > now(), "presale is ended");
 
   contributions contribution_table(_self, _self);
 
@@ -123,6 +124,7 @@ void codumpresale::buycodum(const account_name contributor,
     counter++;
   }
 
+  print_f("FOR % WE HAVE % CONTRIBUTIONS\n", name{contributor}.to_string().c_str(), uint64_t(counter));
   eosio_assert(counter < 3, "contributor cannot have more than 3 unverified transactions");
 
   contribution_table.emplace(_self, [&](auto &ct) {
@@ -135,7 +137,7 @@ void codumpresale::buycodum(const account_name contributor,
     ct.distributed = 0;
     ct.refunded = 0;
 
-    token::exrates exrate_table(tokencontract, tokencontract); // TODO: abstract to configurable const on the top of .hpp;
+    token::exrates exrate_table(tokencontract, tokencontract);
     auto rt = exrate_table.find(network);
     eosio_assert(rt != exrate_table.end(), "no such network in codum.token exrates table");
 
@@ -169,27 +171,25 @@ void codumpresale::validate(const uint64_t id, const string &memo, const string 
 
     vt.validated = now();
     vt.transaction = transaction;
+    vt.codum_bonus.amount = 0;
 
+    auto dist = vt.codum_dist.amount;
+    int64_t last_bonus = 0;
     const uint8_t stages_count = 2;
 
-    for (uint8_t stage = 0;
-         vt.codum_bonus.amount == 0 && get_bonus_state(stage) > 0 && stage < stages_count;
-         stage++)
+    for (uint8_t stage = 0; dist > 0 && stage < stages_count; stage++)
     {
-      auto codum_bonus = vt.codum_dist.amount * bonus[stage] / 100;
-
-      if (codum_bonus <= get_bonus_state(stage))
+      auto left = get_bonus_state(stage) - last_bonus;
+      if (dist <= left)
       {
-        vt.codum_bonus.amount = codum_bonus;
+        vt.codum_bonus.amount += dist * bonus[stage] / 100;
+        break;
       }
-      else
+      else if (left > 0)
       {
-        vt.codum_bonus.amount = get_bonus_state(stage);
-
-        if (stage < stages_count - 1)
-        {
-          vt.codum_bonus.amount += (vt.codum_dist.amount - vt.codum_bonus.amount * 100 / bonus[stage]) * bonus[stage + 1] / 100;
-        }
+        vt.codum_bonus.amount += left * bonus[stage] / 100;
+        dist -= left;
+        last_bonus += left;
       }
     }
   });
@@ -220,14 +220,17 @@ void codumpresale::distribute(const uint64_t id)
 
     auto hardcapLeft = get_sale_state(hardcap);
 
-    if (hardcapLeft > 0)
+    if (hardcapLeft > 1)
     {
       auto dc = asset(0, S(4, CODUM));
 
       if (hardcapLeft < dt.codum_dist.amount)
       {
         dc.amount = hardcapLeft;
-        dt.refund = dt.quantity - (dt.codum_dist - dc) / dt.rate;
+        dt.refund = asset(
+          (dt.codum_dist.amount - dc.amount) * 10000 / dt.rate,
+          dt.quantity.symbol
+        );
       }
       else
       {
@@ -244,7 +247,7 @@ void codumpresale::distribute(const uint64_t id)
     }
     else
     {
-      dt.refund = dt.codum_dist / dt.rate;
+      dt.refund = asset(dt.codum_dist.amount * 10000 / dt.rate, dt.quantity.symbol);
       dt.distrib_tx = "";
     }
   });
@@ -277,4 +280,36 @@ void codumpresale::refundsale(uint64_t id, string refund_tx)
   }
 }
 
-EOSIO_ABI(codumpresale, (apply)(approve)(buycodum)(validate)(deletetx)(distribute)(refundsale))
+
+void codumpresale::finish()
+{
+  require_auth(_self);
+  eosio_assert(end < now() || get_sale_state(hardcap) < 1, "presale is not ended yet");
+
+  contributions contribution_table(_self, _self);
+
+  if (get_sale_state(softcap) > 0)
+  {
+    for (auto itr = contribution_table.begin(); itr != contribution_table.end(); itr++)
+    {
+      if (itr->validated > 0)
+      {
+        contribution_table.modify(itr, _self, [&](auto &dt) {
+          dt.refund = asset(dt.codum_dist.amount * 10000 / dt.rate, dt.quantity.symbol);
+        });
+      }
+    }
+  }
+  else
+  {
+    for (const auto &ct: contribution_table)
+    {
+      if (ct.validated > 0)
+      {
+        eosio_assert(ct.distributed > 0 || ct.refunded > 0, "there is pending validated contribution");
+      }
+    }
+  }
+}
+
+EOSIO_ABI(codumpresale, (apply)(approve)(buycodum)(validate)(deletetx)(distribute)(refundsale)(finish))
