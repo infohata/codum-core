@@ -115,17 +115,18 @@ void codumpresale::buycodum(const account_name contributor,
 
   auto contributorIndex = contribution_table.get_index<N(contributor)>();
 
-  uint8_t counter = 0;
+  uint8_t nonvalContrsNumber = 0;
   auto lower = contributorIndex.lower_bound(contributor);
   auto upper = contributorIndex.upper_bound(contributor);
   
   for (auto itr = lower; itr != upper; itr++)
   {
-    counter++;
+    if (itr->validated == 0) {
+      nonvalContrsNumber++;
+    }
   }
 
-  print_f("FOR % WE HAVE % CONTRIBUTIONS\n", name{contributor}.to_string().c_str(), uint64_t(counter));
-  eosio_assert(counter < 3, "contributor cannot have more than 3 unverified transactions");
+  eosio_assert(nonvalContrsNumber < 3, "contributor cannot have more than 3 unverified transactions");
 
   contribution_table.emplace(_self, [&](auto &ct) {
     ct.id = contribution_table.available_primary_key();
