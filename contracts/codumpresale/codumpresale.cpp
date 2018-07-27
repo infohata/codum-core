@@ -121,7 +121,8 @@ void codumpresale::buycodum(const account_name contributor,
   
   for (auto itr = lower; itr != upper; itr++)
   {
-    if (itr->validated == 0) {
+    if (itr->validated == 0)
+    {
       nonvalContrsNumber++;
     }
   }
@@ -217,6 +218,7 @@ void codumpresale::distribute(const uint64_t id)
 
   contribution_table.modify(itr, _self, [&](auto &dt) {
     eosio_assert(dt.validated > 0, "contribution is not validated");
+    eosio_assert(dt.distributed == 0, "contribution is already distributed");
     eosio_assert(dt.refunded == 0, "contribution is refunded");
 
     auto hardcapLeft = get_sale_state(hardcap);
