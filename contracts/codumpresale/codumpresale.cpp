@@ -146,15 +146,6 @@ void codumpresale::buycodum(const account_name contributor,
     ct.rate = rt->rate;
     ct.codum_dist = asset(ct.quantity.amount * ct.rate / 10000, S(4, CODUM));
     ct.codum_bonus = asset(0, S(4, CODUM));
-
-    // if (network == NETWORK_EOS) {
-    // action(
-    //   { contributor, N(active) },
-    //   tokencontract, N(transfer),
-    //   std::make_tuple(contributor, _self, quantity, ct.memo)
-    // ).send();
-    // ct.validated = now();
-    // }
   });
 }
 
