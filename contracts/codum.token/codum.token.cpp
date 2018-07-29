@@ -118,7 +118,7 @@ void token::setgrunlock(uint64_t date, uint8_t percent) // WIP
 void token::launchlock(account_name to, asset quantity)
 {
     token::check_distributor_and_asset(quantity);
-    time launch_date = 1567987200 //==> epoch time in seconds corressponding to Monday, 9 September 2019 00:00:00 GMT
+    time launch_date = 1567987200; //==> epoch time in seconds corressponding to Monday, 9 September 2019 00:00:00 GMT
     // time launch_date = 1000; // launch date for testing.
     token::launch_lock(to, quantity, launch_date);
 }
